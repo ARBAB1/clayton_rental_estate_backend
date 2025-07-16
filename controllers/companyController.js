@@ -132,3 +132,33 @@ exports.checkUsername = (req, res) => {
     }
   );
 };
+
+// TOTAL COMPANIES
+exports.totalCompany = (req, res) => {
+  db.query("SELECT COUNT(*) AS total FROM companies", (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.status(200).json({ total: rows[0].total });
+  });
+};
+
+// ACTIVE COMPANIES
+exports.activeCompany = (req, res) => {
+  db.query("SELECT COUNT(*) AS total FROM companies WHERE status = 'active'", (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.status(200).json({ total: rows[0].total });
+  });
+};
+
+// TopTenCompanies
+exports.getTopTenCompanies = async (req, res) => {
+  try {
+    const query = `SELECT name, email FROM companies WHERE status = 'active' ORDER BY created_at DESC LIMIT 10`;
+    db.query(query, (err, result) => {
+      if (err) return res.status(500).json({ error: "DB error" });
+      if (result.length === 0) return res.status(404).json({ message: "Company not found", status: 404 });
+      res.status(200).json({ status: 200, data: result });
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};

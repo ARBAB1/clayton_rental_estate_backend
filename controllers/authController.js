@@ -81,7 +81,20 @@ exports.sendToken = (req, res) => {
 };
 exports.logout = (req, res) => {
   const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(400).json({ message: "No refresh token found" });
+  }
+
+  // OPTIONAL: Remove from memory or DB if you track issued refresh tokens
   refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
-  res.clearCookie("refreshToken");
-  res.sendStatus(204);
+
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: false, // Set to true in production with HTTPS
+    sameSite: "Lax", // or 'Strict' depending on client/server origin
+    path: "/auth", // Make sure it matches where you originally set the cookie
+  });
+
+  return res.status(200).json({ message: "Logged out successfully" });
 };
